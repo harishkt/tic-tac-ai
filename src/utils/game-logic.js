@@ -38,11 +38,10 @@ export const getEmptySpotsByIndex = (squares) => {
 }
 export const isDraw
 	= (squares) => squares.every(square => square !== null);
-
+const humanPlayer = 'O';
+const aiPlayer = 'X';
 export const minMax = (squares, player) => {
 	const availableSpots = getEmptySpotsByIndex(squares);
-	const humanPlayer = 'O';
-	const aiPlayer = 'X';
 	// Check for terminal states
 	if (didWinByPlayer(squares, humanPlayer)) {
 		return { score: -10 };

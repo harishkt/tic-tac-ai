@@ -7,7 +7,7 @@ const initState = {
 		[ 'Game Start']
 	],
 	data: Array(9).fill(null),
-	currentPlayer: 'O',
+	currentPlayer: null,
 	humanPlayer: 'O',
 	aiPlayer: 'X'
 };
@@ -17,11 +17,13 @@ export default class Game extends Component {
 		this.state = initState;
 		this.handleClick = this.handleClick.bind(this);
 		this.handleReset = this.handleReset.bind(this);
+		this.selectFirstPlayer = this.selectFirstPlayer.bind(this);
 	}
 
 	handleClick(tile) {
 		const [ ...data ] = this.state.data;
-		const { currentPlayer, history } = this.state;
+		const { humanPlayer, history, aiPlayer, currentPlayer } = this.state;
+		const nextPlayer = getOtherPlayer(currentPlayer);
 		const Msg = `You selected Tile - ${tile}`;
 		if (didWin(data) || isDraw(data)) {
 			return;
@@ -29,22 +31,21 @@ export default class Game extends Component {
 		if (data[tile] !== null) {
 			return;
 		}
-		const nextPlayer = getOtherPlayer(currentPlayer);
-		data[tile] = currentPlayer;
-		const { index: aiSelectedTile } = minMax(data, nextPlayer);
-		data[aiSelectedTile] = nextPlayer;
+		data[tile] = humanPlayer;
+		
+		
+		// Ai player plays
+		const { index: aiSelectedTile } = minMax(data, aiPlayer);
+		data[aiSelectedTile] = aiPlayer;
 		const aiMsg = `AI selected ${aiSelectedTile}`;
 		const newHistory = [...history, Msg, aiMsg];
+
+
 		this.setState({
 			data,
-			currentPlayer,
-			history: newHistory
+			history: newHistory,
+			currentPlayer
 		});
-	}
-
-	isDraw() {
-		const { squares } = this.state;
-		return squares.every(tile => tile !== null);
 	}
 	handleReset() {
 		this.setState(initState);
@@ -61,27 +62,57 @@ export default class Game extends Component {
 		const { data, currentPlayer } = this.state;
 		const otherPlayer = getOtherPlayer(currentPlayer);
 		return didWin(data)
-			? `Winner is ${getPlayerNameById(otherPlayer)}`
+			? `Winner is ${getPlayerNameById(currentPlayer)}`
 			: isDraw(data)
-				? `Game Draw. Play Again`
-				: `Next Player - ${currentPlayer}`
+				? `Game Draw. Play Again` : null;
+				// : `Next Player - ${currentPlayer}`
 	}
 	showHistory() {
 		const { history } = this.state;
 		return history.map((step, index) => <li key={index}>{step}</li>);
 	}
+	selectFirstPlayer(playerId) {
+		const { data, history, aiPlayer } = this.state
+		let newHistory = [...history];
+		const newData = [...data];
+		if(playerId === aiPlayer) {
+			//Select a tile first
+			const { index: aiSelectedTile } = minMax(data, aiPlayer);
+			newData[aiSelectedTile] = aiPlayer;
+			const aiMsg = `AI selected ${aiSelectedTile}`;
+			newHistory = [...history, aiMsg];
+		}
+		this.setState({
+			currentPlayer: playerId,
+			data: newData,
+			history: newHistory
+		});
+	}
 	render() {
+		const { currentPlayer, humanPlayer, aiPlayer } = this.state;
+		const gameSetup = (
+			<div>
+				<p>Who starts the game? AI or You?</p>
+				<button onClick={() => this.selectFirstPlayer(aiPlayer)}>AI</button>
+				<button onClick={() => this.selectFirstPlayer(humanPlayer)}>Me</button>
+			</div>
+		);
+		const showGame = (
+			<div>
+				<div className="game-reset">{this.showResetBtn()}</div>
+				<div className="game-status">Status:{this.getGameStatus()}</div>
+					<Board 
+							onClick={this.handleClick}
+							data={this.state.data}
+							boardSize={3}
+					/>
+				<ol>{this.showHistory()}</ol>
+			</div>
+		);
 		return(
 			<div>
 				<h1 className="game-heading">Tic Tac Toe</h1>
-				<div className="game-reset">{this.showResetBtn()}</div>
-				<div className="game-status">Status:{this.getGameStatus()}</div>
-				<Board 
-						onClick={this.handleClick}
-						data={this.state.data}
-						boardSize={3}
-				/>
-				<ol>{this.showHistory()}</ol>
+				{currentPlayer === null ? gameSetup : showGame }
 			</div>
 		);
 	}
