@@ -38,8 +38,8 @@ export const getEmptySpotsByIndex = (squares) => {
 }
 export const isDraw
 	= (squares) => squares.every(square => square !== null);
-const humanPlayer = 'O';
-const aiPlayer = 'X';
+export const humanPlayer = 'O';
+export const aiPlayer = 'X';
 export const minMax = (squares, player) => {
 	const availableSpots = getEmptySpotsByIndex(squares);
 	// Check for terminal states

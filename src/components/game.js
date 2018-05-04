@@ -1,16 +1,22 @@
 import React,  { Component } from 'react';
 import Board from './board';
-import { getOtherPlayer, didWin, isDraw, minMax, getPlayerNameById } from '../utils/game-logic';
+import { getOtherPlayer,
+		didWin,
+		isDraw,
+		minMax,
+		getPlayerNameById,
+		humanPlayer,
+		aiPlayer
+	} from '../utils/game-logic';
 
 const initState = {
 	history: [
 		[ 'Game Start']
 	],
 	data: Array(9).fill(null),
-	currentPlayer: null,
-	humanPlayer: 'O',
-	aiPlayer: 'X'
+	currentPlayer: null
 };
+
 export default class Game extends Component {
 	constructor(props) {
 		super(props);
@@ -22,7 +28,7 @@ export default class Game extends Component {
 
 	handleClick(tile) {
 		const [ ...data ] = this.state.data;
-		const { humanPlayer, history, aiPlayer, currentPlayer } = this.state;
+		const { history, currentPlayer } = this.state;
 		const nextPlayer = getOtherPlayer(currentPlayer);
 		const Msg = `You selected Tile - ${tile}`;
 		if (didWin(data) || isDraw(data)) {
@@ -72,7 +78,7 @@ export default class Game extends Component {
 		return history.map((step, index) => <li key={index}>{step}</li>);
 	}
 	selectFirstPlayer(playerId) {
-		const { data, history, aiPlayer } = this.state
+		const { data, history } = this.state
 		let newHistory = [...history];
 		const newData = [...data];
 		if(playerId === aiPlayer) {
