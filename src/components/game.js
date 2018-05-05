@@ -27,6 +27,14 @@ export default class Game extends Component {
 		this.selectFirstPlayer = this.selectFirstPlayer.bind(this);
 	}
 
+	componentWillMount(){
+		document.body.style.backgroundColor = "#545454";
+	}
+	
+	componentWillUnmount() {
+		document.body.style.backgroundColor = null;
+	}
+
 	handleClick(tile) {
 		const [ ...data ] = this.state.data;
 		const { history, currentPlayer } = this.state;
@@ -59,9 +67,10 @@ export default class Game extends Component {
 	}
 	showResetBtn() {
 		return(
-			<button 
+			<button
+				className="btn"
 				onClick={this.handleReset}
-			>Restart Game
+			>Reset
 			</button>
 		);
 	}
@@ -70,10 +79,9 @@ export default class Game extends Component {
 		const winner = didWinByPlayer(data, aiPlayer)
 			? aiPlayer : didWinByPlayer(data, humanPlayer) ? humanPlayer : null;
 		return winner
-			? `Winner is ${winner}`
+			? { status: 'Win', winner }
 			: isDraw(data)
-				? `Game Draw. Play Again` : null;
-				// : `Next Player - ${currentPlayer}`
+				? { status: 'Draw' } : { status: null }
 	}
 	showHistory() {
 		const { history } = this.state;
@@ -97,7 +105,26 @@ export default class Game extends Component {
 		});
 	}
 	render() {
+		// <ol>{this.showHistory()}</ol>
+		// <div className="game-status">Status:{this.getGameStatus()}</div>
 		const { currentPlayer } = this.state;
+		const { status,  winner } = this.getGameStatus();
+		const gameBoard = (
+			<Board 
+							onClick={this.handleClick}
+							data={this.state.data}
+							boardSize={3}
+			/>
+		);
+		let gameScreen;
+		if (status === 'Win') {
+			gameScreen = (<div><p className='status-msg'>{winner} won. Play Again!!!!</p></div>);
+		} else if(status === 'Draw') {
+			gameScreen = (<div><p className='status-msg'>Game Draw. Play Again!!!</p></div>);
+		} else {
+			gameScreen = gameBoard;
+		}
+		
 		const gameSetup = (
 			<div>
 				<p>Who starts the game? AI or You?</p>
@@ -105,22 +132,16 @@ export default class Game extends Component {
 				<button onClick={() => this.selectFirstPlayer(humanPlayer)}>Me</button>
 			</div>
 		);
-		const showGame = (
+		const playGame = (
 			<div>
 				<div className="game-reset">{this.showResetBtn()}</div>
-				<div className="game-status">Status:{this.getGameStatus()}</div>
-					<Board 
-							onClick={this.handleClick}
-							data={this.state.data}
-							boardSize={3}
-					/>
-				<ol>{this.showHistory()}</ol>
+				{gameScreen}	
 			</div>
 		);
 		return(
 			<div>
 				<h1 className="game-heading">Tic Tac Toe</h1>
-				{currentPlayer === null ? gameSetup : showGame }
+				{currentPlayer === null ? gameSetup : playGame }
 			</div>
 		);
 	}
