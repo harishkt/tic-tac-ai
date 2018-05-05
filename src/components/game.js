@@ -2,6 +2,7 @@ import React,  { Component } from 'react';
 import Board from './board';
 import { getOtherPlayer,
 		didWin,
+		didWinByPlayer,
 		isDraw,
 		minMax,
 		getPlayerNameById,
@@ -65,10 +66,11 @@ export default class Game extends Component {
 		);
 	}
 	getGameStatus() {
-		const { data, currentPlayer } = this.state;
-		const otherPlayer = getOtherPlayer(currentPlayer);
-		return didWin(data)
-			? `Winner is ${getPlayerNameById(currentPlayer)}`
+		const { data } = this.state;
+		const winner = didWinByPlayer(data, aiPlayer)
+			? aiPlayer : didWinByPlayer(data, humanPlayer) ? humanPlayer : null;
+		return winner
+			? `Winner is ${winner}`
 			: isDraw(data)
 				? `Game Draw. Play Again` : null;
 				// : `Next Player - ${currentPlayer}`
@@ -95,7 +97,7 @@ export default class Game extends Component {
 		});
 	}
 	render() {
-		const { currentPlayer, humanPlayer, aiPlayer } = this.state;
+		const { currentPlayer } = this.state;
 		const gameSetup = (
 			<div>
 				<p>Who starts the game? AI or You?</p>

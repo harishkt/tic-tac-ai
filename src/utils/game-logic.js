@@ -51,54 +51,25 @@ export const minMax = (squares, player) => {
 		return { score: 0 };
 	}
 
-
-	const moves = [];
-	// loop through available spots
-	availableSpots.forEach((spotId, index) => {
-		//create an object for each and store the index of that spot that was stored as a number in the object's index key
-		const move = {};
-		move.index = spotId;
-		// set the empty spot to the current player
-		squares[spotId] = player;
-		//if collect the score resulted from calling minimax on the opponent of the current player
-		if (player === aiPlayer){
-			const result = minMax(squares, humanPlayer);
-			move.score = result.score;
-		  }
-		  else{
-			const result = minMax(squares, aiPlayer);
-			move.score = result.score;
-		  }
-		//reset the spot to empty
-		squares[spotId] = null;
-	  
-		// push the object to the array
-		moves.push(move);
-
-	})
-	// if it is the computer's turn loop over the moves and choose the move with the highest score
-	let bestMove;
-	if (player === aiPlayer) {
-		let bestScore = -10000;
-		moves.forEach((move, index) => {
-			const { score } = move;
-			if (score > bestScore) {
-				bestScore = score;
-				bestMove = index;
+	const moves
+		= availableSpots.map((emptySpotId) => {
+			const newBoard
+				= squares.map((spot, index) => (index === emptySpotId) ? player : spot);
+			const otherPlayer = getOtherPlayer(player);
+			return {
+				index: emptySpotId,
+				score: minMax(newBoard, otherPlayer).score
 			}
-		});
-	} else {
-		// else loop over the moves and choose the move with the lowest score
-		let bestScore = 10000;
-		moves.forEach((move, index) => {
-			const { score } = move;
-			if(score < bestScore){
-				bestScore = score;
-				bestMove = index;
-			  }
-		});
-	}
-	
-    // return the chosen move (object) from the array to the higher depth
-	return moves[bestMove];
+	});
+	const bMove = moves.reduce((previous, current) => {
+		// if player is aiPlayer return moves with best scores
+		if (player === aiPlayer) {
+			return current.score > previous.score ? current : previous;
+		}
+		// if player is human player return moves with less scores
+		if (player === humanPlayer) {
+			return current.score < previous.score ? current : previous
+		}
+	});
+	return bMove;
 }
